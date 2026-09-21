@@ -1,0 +1,588 @@
+<title>友則の複利</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700&family=Zen+Kaku+Gothic+New:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --ground:#E9EBEC;
+    --surface:#F5F6F6;
+    --paper:#FBFAF7;
+    --ink:#14181D;
+    --ink-2:#4E5862;
+    --ink-3:#7C8792;
+    --indigo:#1F3A5F;
+    --gold:#9C7128;
+    --gold-fill:rgba(184,134,59,.20);
+    --rule:#CCD2D7;
+    --rule-soft:#DDE1E4;
+    --seal:#9C2B2B;
+    --font-display:"Shippori Mincho B1","Hiragino Mincho ProN","Yu Mincho",serif;
+    --font-body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif;
+    --font-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,monospace;
+    --measure:37em;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --ground:#0F1317;
+      --surface:#171C22;
+      --paper:#1B2026;
+      --ink:#E3E7EA;
+      --ink-2:#9AA5AF;
+      --ink-3:#6C7883;
+      --indigo:#84ABD6;
+      --gold:#D9A441;
+      --gold-fill:rgba(217,164,65,.17);
+      --rule:#2A323A;
+      --rule-soft:#232A31;
+      --seal:#B4483F;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#0F1317;
+    --surface:#171C22;
+    --paper:#1B2026;
+    --ink:#E3E7EA;
+    --ink-2:#9AA5AF;
+    --ink-3:#6C7883;
+    --indigo:#84ABD6;
+    --gold:#D9A441;
+    --gold-fill:rgba(217,164,65,.17);
+    --rule:#2A323A;
+    --rule-soft:#232A31;
+    --seal:#B4483F;
+  }
+
+  body{
+    background:var(--ground);
+    color:var(--ink);
+    font-family:var(--font-body);
+    font-weight:300;
+    font-size:16px;
+    line-height:2.05;
+    letter-spacing:.035em;
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{
+    max-width:64rem;
+    margin:0 auto;
+    padding-inline:24px;
+    padding-block:0 0;
+  }
+  p{margin:0}
+  h1,h2,h3{margin:0;font-family:var(--font-display);font-weight:500;text-wrap:balance;letter-spacing:.06em}
+  .prose{max-width:var(--measure)}
+  .prose p + p{margin-top:1.1em}
+
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:.7rem;
+    letter-spacing:.24em;
+    color:var(--ink-3);
+    text-transform:none;
+    line-height:1.6;
+  }
+
+  /* ---------- hero ---------- */
+  .hero{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:56px;
+    align-items:start;
+    padding-block:72px 64px;
+    border-bottom:1px solid var(--rule);
+  }
+  .hero-left{display:flex;flex-direction:column;gap:26px;align-self:center;max-width:32em}
+  .hero-lede{font-size:.98rem;color:var(--ink-2);line-height:2.15}
+  .hero-rule{width:64px;height:2px;background:var(--gold)}
+  .hero-vert{display:flex;flex-direction:row;align-items:flex-start;gap:14px}
+  .vert-main{
+    writing-mode:vertical-rl;
+    text-orientation:mixed;
+    font-size:clamp(1.6rem,3.4vw,2.4rem);
+    line-height:1.18;
+    letter-spacing:.18em;
+    font-weight:700;
+    margin:0;
+  }
+  .vert-sub{
+    writing-mode:vertical-rl;
+    font-family:var(--font-display);
+    font-size:.92rem;
+    letter-spacing:.26em;
+    color:var(--ink-3);
+    margin-top:2.5em;
+  }
+  .hero-meta{
+    display:flex;flex-wrap:wrap;gap:8px 22px;
+    font-family:var(--font-mono);font-size:.74rem;letter-spacing:.08em;color:var(--ink-3);
+    font-variant-numeric:tabular-nums;
+  }
+  .hero-meta b{color:var(--ink-2);font-weight:500}
+
+  /* ---------- generic section ---------- */
+  .sec{padding-block:64px;border-bottom:1px solid var(--rule)}
+  .sec-head{display:flex;flex-direction:column;gap:10px;margin-bottom:34px}
+  .sec-head h2{font-size:1.5rem;font-weight:700}
+
+  /* ---------- passbook ---------- */
+  .book-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,340px);gap:44px;align-items:start}
+  .book{
+    position:relative;
+    background:var(--paper);
+    border:1px solid var(--rule);
+    border-left:3px solid var(--indigo);
+    padding:22px 20px 18px;
+  }
+  .book-title{
+    font-family:var(--font-display);font-size:.85rem;letter-spacing:.3em;color:var(--ink-2);
+    padding-bottom:12px;border-bottom:1px solid var(--rule-soft);margin-bottom:6px;
+  }
+  .book-scroll{overflow-x:auto}
+  table.tsucho{border-collapse:collapse;width:100%;min-width:280px;font-family:var(--font-mono);font-size:.76rem;font-variant-numeric:tabular-nums}
+  table.tsucho th{
+    font-weight:400;color:var(--ink-3);text-align:right;padding:8px 6px;
+    border-bottom:1px solid var(--rule-soft);letter-spacing:.06em;font-size:.68rem;
+  }
+  table.tsucho th:first-child{text-align:left}
+  table.tsucho td{padding:7px 6px;text-align:right;border-bottom:1px dotted var(--rule);color:var(--ink-2)}
+  table.tsucho td:first-child{text-align:left;color:var(--ink-3)}
+  table.tsucho tr:last-child td{border-bottom:none;color:var(--ink);font-weight:500}
+  .seal{
+    position:absolute;right:16px;bottom:14px;width:52px;height:52px;border-radius:50%;
+    border:2px solid var(--seal);color:var(--seal);
+    display:grid;place-items:center;font-family:var(--font-display);font-size:1.5rem;
+    transform:rotate(-8deg);opacity:.62;
+  }
+  .book-note{margin-top:20px;font-size:.84rem;color:var(--ink-3);line-height:2}
+
+  /* ---------- timeline ---------- */
+  .chapters{display:flex;flex-direction:column}
+  .ch{
+    display:grid;grid-template-columns:7.5rem minmax(0,1fr);gap:0 32px;
+    padding-block:28px;position:relative;
+  }
+  .ch::before{
+    content:"";position:absolute;left:calc(7.5rem + 15px);top:0;bottom:0;width:1px;background:var(--rule);
+  }
+  .ch:first-child::before{top:34px}
+  .ch:last-child::before{bottom:auto;height:34px}
+  .ch::after{
+    content:"";position:absolute;left:calc(7.5rem + 11px);top:32px;width:9px;height:9px;
+    border-radius:50%;background:var(--ground);border:1.5px solid var(--indigo);
+  }
+  .ch-year{display:flex;flex-direction:column;gap:2px;padding-top:.45em}
+  .ch-year .yr{font-family:var(--font-mono);font-size:1.05rem;font-weight:500;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+  .ch-year .era{font-family:var(--font-display);font-size:.72rem;letter-spacing:.16em;color:var(--ink-3)}
+  .ch-body{max-width:var(--measure)}
+  .ch-body h3{font-size:1.12rem;margin-bottom:.5em;letter-spacing:.09em}
+  .ch-body p{font-size:.95rem;color:var(--ink-2)}
+  .ch-body p + p{margin-top:.9em}
+  .ch-fig{
+    display:inline-flex;align-items:baseline;gap:.5em;margin-top:14px;
+    font-family:var(--font-mono);font-size:.74rem;font-variant-numeric:tabular-nums;
+    color:var(--ink-3);border-top:1px solid var(--rule-soft);padding-top:8px;
+  }
+  .ch-fig b{font-weight:500;color:var(--gold)}
+  .ch.pivot .ch-body h3{color:var(--indigo)}
+  .ch.pivot::after{background:var(--indigo)}
+
+  /* ---------- stats ---------- */
+  .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin-bottom:38px}
+  .stat{background:var(--surface);padding:20px 18px;display:flex;flex-direction:column;gap:6px}
+  .stat .k{font-size:.74rem;color:var(--ink-3);letter-spacing:.1em;line-height:1.5}
+  .stat .v{font-family:var(--font-mono);font-size:1.38rem;font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:-.01em;line-height:1.3}
+  .stat.accent .v{color:var(--gold)}
+
+  /* ---------- chart ---------- */
+  .legend{display:flex;flex-wrap:wrap;gap:10px 26px;margin-bottom:14px;font-size:.78rem;color:var(--ink-2)}
+  .legend span{display:inline-flex;align-items:center;gap:8px}
+  .swatch{width:20px;height:0;border-top:2px solid currentColor;display:inline-block}
+  .sw-gold{color:var(--gold)}
+  .sw-indigo{color:var(--indigo)}
+  .sw-fill{display:inline-block;width:20px;height:11px;background:var(--gold-fill);border:1px solid var(--gold);border-top:none;border-bottom:none}
+  .chart-scroll{overflow-x:auto;padding-bottom:4px}
+  .chart{display:block;width:100%;min-width:660px;height:auto}
+  .chart text{font-family:var(--font-mono);fill:var(--ink-3);font-size:11px}
+  .chart .axis-line{stroke:var(--rule);stroke-width:1;fill:none}
+  .chart .grid{stroke:var(--rule-soft);stroke-width:1;fill:none}
+  .chart .band{fill:var(--rule-soft);opacity:.75}
+  .chart .band-label{fill:var(--ink-3);font-size:10px;letter-spacing:.08em}
+  .chart .line-asset{fill:none;stroke:var(--gold);stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+  .chart .line-principal{fill:none;stroke:var(--indigo);stroke-width:1.6;stroke-dasharray:5 4;stroke-linejoin:round}
+  .chart .gap{fill:var(--gold-fill)}
+  .chart .dot-asset{fill:var(--gold)}
+  .chart .dot-principal{fill:var(--indigo)}
+  .chart .val{fill:var(--ink);font-size:12px;font-weight:500}
+  .chart .val-muted{fill:var(--ink-2);font-size:11px}
+  .chart-note{margin-top:18px;font-size:.86rem;color:var(--ink-3);max-width:var(--measure);line-height:2}
+
+  /* ---------- principles ---------- */
+  .rules{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--rule)}
+  .rule-row{display:grid;grid-template-columns:minmax(0,17em) minmax(0,1fr);gap:8px 36px;padding-block:22px;border-bottom:1px solid var(--rule-soft)}
+  .rule-row dt{font-family:var(--font-display);font-size:1.06rem;font-weight:700;letter-spacing:.1em;line-height:1.8}
+  .rule-row dd{margin:0;font-size:.92rem;color:var(--ink-2)}
+
+  /* ---------- closing ---------- */
+  .closing{padding-block:64px}
+  .closing .prose p{font-size:1rem}
+  .blackboard{
+    margin:30px 0;padding:26px 24px;background:var(--surface);border:1px solid var(--rule);
+    display:flex;flex-direction:column;gap:8px;max-width:26em;
+  }
+  .blackboard .eq{font-family:var(--font-mono);font-size:1.5rem;letter-spacing:.06em;color:var(--gold);font-variant-numeric:tabular-nums}
+  .blackboard .cap{font-size:.82rem;color:var(--ink-3);line-height:1.9}
+  .sign{margin-top:34px;font-family:var(--font-display);font-size:.95rem;letter-spacing:.2em;color:var(--ink-3)}
+  footer{border-top:1px solid var(--rule);padding-block:26px 46px;font-size:.76rem;color:var(--ink-3);line-height:2;max-width:var(--measure)}
+
+  @media (max-width:860px){
+    .book-grid{grid-template-columns:minmax(0,1fr);gap:30px}
+    .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:720px){
+    .page{padding-inline:18px}
+    .hero{grid-template-columns:minmax(0,1fr);gap:28px;padding-block:44px 44px}
+    .hero-vert{order:-1}
+    .vert-main,.vert-sub{writing-mode:horizontal-tb}
+    .vert-main{font-size:1.75rem;line-height:1.7;letter-spacing:.1em}
+    .vert-sub{margin-top:0;font-size:.82rem;letter-spacing:.2em}
+    .hero-vert{flex-direction:column-reverse;align-items:flex-start;gap:10px}
+    .ch{grid-template-columns:minmax(0,1fr);gap:6px;padding-left:20px;padding-block:24px}
+    .ch::before{left:3px}
+    .ch::after{left:0;top:12px}
+    .ch:first-child::before{top:14px}
+    .ch:last-child::before{height:14px}
+    .ch-year{flex-direction:row;align-items:baseline;gap:10px;padding-top:0}
+    .rule-row{grid-template-columns:minmax(0,1fr);gap:6px}
+    .sec{padding-block:48px}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="page" lang="ja">
+
+  <header class="hero">
+    <div class="hero-left">
+      <p class="eyebrow">一九五八 — 二〇二六 　 島根 · 大阪 · 島根</p>
+      <div class="hero-rule"></div>
+      <p class="hero-lede">島根の谷あいに生まれた。電気が村まで届いたのは、六つの年だった。十六で大阪へ出て、初めての給料から五千円を郵便局に預けた。それから五十二年、友則は一度も積み立てを止めていない。これは、才能の話ではない。続いた時間の話である。</p>
+      <div class="hero-meta">
+        <span>元本 <b>30,200,000円</b></span>
+        <span>評価額 <b>112,000,000円</b></span>
+        <span>期間 <b>52年</b></span>
+      </div>
+    </div>
+    <div class="hero-vert">
+      <p class="vert-sub">山あいの村から、五十二年</p>
+      <h1 class="vert-main">金は、時間に働かせる</h1>
+    </div>
+  </header>
+
+  <section class="sec">
+    <div class="sec-head">
+      <p class="eyebrow">序 — 最初の一行</p>
+      <h2>証券口座ではなく、一冊の通帳から</h2>
+    </div>
+    <div class="book-grid">
+      <div class="prose">
+        <p>友則の記録は、昭和四十九年五月十日から始まる。大阪の鉄工所の寮、二段ベッドの下段。初任給四万二千円のうち、二万円を島根へ仕送りし、残りから五千円を郵便局の定額貯金に入れた。理由を尋ねられると、彼はいつも同じことを言う。「手元に置くと、無くなるから」。</p>
+        <p>当時の定額貯金は、年八分に近い利率がついた。預けたまま十年で、およそ倍になる勘定である。友則が最初に覚えた金融の知識は、この一行の重みだった。利息が利息を生むということを、彼は数式ではなく、通帳の残高欄で理解した。</p>
+        <p>五年と十か月、彼は一度も引き出さなかった。</p>
+      </div>
+      <div class="book">
+        <p class="book-title">郵 便 貯 金 通 帳</p>
+        <div class="book-scroll">
+          <table class="tsucho">
+            <thead>
+              <tr><th>年月日</th><th>お預り金額</th><th>残高</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>49. 5.10</td><td>5,000</td><td>5,000</td></tr>
+              <tr><td>49. 6.10</td><td>5,000</td><td>10,000</td></tr>
+              <tr><td>49. 7.10</td><td>5,000</td><td>15,000</td></tr>
+              <tr><td>49. 8.10</td><td>5,000</td><td>20,000</td></tr>
+              <tr><td>　　 ⋮</td><td>⋮</td><td>⋮</td></tr>
+              <tr><td>54. 3.10</td><td>5,000</td><td>318,400</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="seal" aria-hidden="true">友</div>
+      </div>
+    </div>
+    <p class="book-note">昭和五十四年三月、残高三十一万八千四百円。預けた元本は二十九万円。差の二万八千四百円が、彼が生涯かけて信じることになるものの、最初の姿だった。</p>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <p class="eyebrow">年 表 — 五十二年の記録</p>
+      <h2>止めなかった、ということだけが特別だった</h2>
+    </div>
+
+    <div class="chapters">
+
+      <article class="ch">
+        <div class="ch-year"><span class="yr">1958</span><span class="era">昭和33</span></div>
+        <div class="ch-body">
+          <h3>電気の来た年</h3>
+          <p>島根県、江の川の支流をさらに遡った谷あいの集落。父は冬に炭を焼き、母は繭を出した。現金が家に入るのは年に二度、炭と繭の代金が届くときだけだった。友則にとって金とは、貯めるものではなく、尽きるものだった。</p>
+        </div>
+      </article>
+
+      <article class="ch">
+        <div class="ch-year"><span class="yr">1974</span><span class="era">昭和49</span></div>
+        <div class="ch-body">
+          <h3>十六の春、大阪</h3>
+          <p>中学を出て集団就職の列車に乗った。東大阪の鉄工所、旋盤工。初任給は四万二千円。仕送り二万円を引いた残りから、毎月十日に五千円を郵便局へ運んだ。同期の三人は、最初の夏までに全員が積み立てをやめた。</p>
+          <p class="ch-fig">月の積立 <b>5,000円</b> ／ 年収 504,000円</p>
+        </div>
+      </article>
+
+      <article class="ch pivot">
+        <div class="ch-year"><span class="yr">1979</span><span class="era">昭和54</span></div>
+        <div class="ch-body">
+          <h3>夜学の簿記</h3>
+          <p>週に三度、仕事を終えてから夜間の簿記学校へ通った。二年かけて日商簿記二級を取り、工場の経理課へ移る。貸借対照表が読めるようになった日のことを、彼はこう書き残している。「株券が紙切れではなく、会社の切れ端だと分かった」。</p>
+          <p>以来、彼は値動きの表を見るのをやめ、決算書の後ろのほうから読む癖をつけた。</p>
+        </div>
+      </article>
+
+      <article class="ch">
+        <div class="ch-year"><span class="yr">1984</span><span class="era">昭和59</span></div>
+        <div class="ch-body">
+          <h3>はじめての株</h3>
+          <p>中国電力を百株。選んだ基準は配当利回りただ一つだった。値上がりを期待したのではなく、年に二度届く配当金の通知が、炭と繭の代金が入る日と同じ手触りだったからだという。</p>
+          <p class="ch-fig">資産 <b>180万円</b> ／ うち株式 32万円</p>
+        </div>
+      </article>
+
+      <article class="ch">
+        <div class="ch-year"><span class="yr">1989</span><span class="era">平成元</span></div>
+        <div class="ch-body">
+          <h3>三八、九一五円</h3>
+          <p>十二月二十九日、大納会。日経平均は38,915円をつけた。工場の同僚は信用取引で値がさ株を買い、休憩室では誰もが含み益の額を口にした。友則も、六百二十万円のうち三百万円を、名前も知らない不動産会社の株に入れた。</p>
+          <p>後年、彼はその判断を「相場観の誤り」とは呼ばなかった。「自分だけが乗り遅れている、という感情。あれがいちばん高くついた」。</p>
+          <p class="ch-fig">資産 <b>620万円</b> ／ 日経平均 38,915円</p>
+        </div>
+      </article>
+
+      <article class="ch pivot">
+        <div class="ch-year"><span class="yr">1992</span><span class="era">平成4</span></div>
+        <div class="ch-body">
+          <h3>四割が消えた</h3>
+          <p>三年で六百二十万円は四百十万円になった。売らなかったのは信念ではなく、麻痺だったと本人は言う。値段を見るのが怖くて、通帳も証券の報告書も、封を切らずに引き出しへ入れた月が続いた。</p>
+          <p>その引き出しの前で、彼は一つだけ決めた。<strong>当てるのを、やめる。</strong></p>
+          <p class="ch-fig">資産 <b>410万円</b> ／ 高値からの下落率 −34%</p>
+        </div>
+      </article>
+
+      <article class="ch pivot">
+        <div class="ch-year"><span class="yr">1995</span><span class="era">平成7</span></div>
+        <div class="ch-body">
+          <h3>毎月三万円</h3>
+          <p>株式累積投資、いわゆる「るいとう」を始める。値段を見ずに、毎月同じ額を、同じ日に買う。高い月は少なく、安い月は多く買えることを、彼は家計簿の余白で確かめた。妻の光代は、食費と光熱費の下に一行を書き足した。「積立　三〇,〇〇〇」。</p>
+          <p>この一行は、以後三十一年、一度も消えていない。</p>
+        </div>
+      </article>
+
+      <article class="ch">
+        <div class="ch-year"><span class="yr">2000</span><span class="era">平成12</span></div>
+        <div class="ch-body">
+          <h3>日本だけでは足りない</h3>
+          <p>通信関連の株が連日値を上げ、そして崩れた。十年の下げ相場を経験して、友則は初めて国外へ目を向ける。外国株式の投資信託を買い始めたが、当時の信託報酬は年2.1%。それが何を意味するのかを理解するのに、彼はさらに十三年を要した。</p>
+          <p class="ch-fig">資産 <b>1,180万円</b> ／ 信託報酬 年2.1%</p>
+        </div>
+      </article>
+
+      <article class="ch">
+        <div class="ch-year"><span class="yr">2003</span><span class="era">平成15</span></div>
+        <div class="ch-body">
+          <h3>七、六〇七円</h3>
+          <p>四月二十八日、日経平均はバブル後の最安値7,607円。新聞は「株式の時代は終わった」と書き、証券会社の支店は閉じていった。友則は積立の金額も日付も変えなかった。理由は単純で、変えるべき理由が思いつかなかったからだという。</p>
+          <p>いま彼の資産のうち、最も増えているのは、この三年間に買った分である。</p>
+        </div>
+      </article>
+
+      <article class="ch pivot">
+        <div class="ch-year"><span class="yr">2008</span><span class="era">平成20</span></div>
+        <div class="ch-body">
+          <h3>やめようか</h3>
+          <p>秋、資産は一千六百二十万円から一千百八十万円へ。光代が初めて口にした。「やめようか」。友則は押し入れから古い郵便貯金通帳を出し、昭和四十九年五月十日の行を指した。</p>
+          <p>「三十四年、これを続けただけです。いまやめたら、三十四年のほうが無駄になる」。</p>
+          <p class="ch-fig">資産 <b>1,180万円</b> ／ 前年比 −27%</p>
+        </div>
+      </article>
+
+      <article class="ch pivot">
+        <div class="ch-year"><span class="yr">2013</span><span class="era">平成25</span></div>
+        <div class="ch-body">
+          <h3>〇・二二%</h3>
+          <p>低コストのインデックスファンドが日本でも普通に買えるようになった年。信託報酬2.1%の投信を、0.22%のものに乗り換える。計算してみて、彼は自分の帳簿の前でしばらく黙った。十三年間、毎年およそ二%を、成績とは関係なく払い続けていた。</p>
+          <p><strong>手数料は確実な損、利回りは不確実な得。</strong>簿記を学んだ男が、六十を前にしてようやく身につけた原則だった。</p>
+          <p class="ch-fig">信託報酬 <b>2.10% → 0.22%</b></p>
+        </div>
+      </article>
+
+      <article class="ch">
+        <div class="ch-year"><span class="yr">2018</span><span class="era">平成30</span></div>
+        <div class="ch-body">
+          <h3>制度に合わせる</h3>
+          <p>つみたてNISAの開始に合わせ、積立額を月五万五千円に引き上げた。六十歳で工場を定年退職し、週三日の再雇用に移ったが、積立の日付だけは変えなかった。毎月十日。四十四年間、同じ日である。</p>
+          <p class="ch-fig">資産 <b>4,300万円</b> ／ 月の積立 55,000円</p>
+        </div>
+      </article>
+
+      <article class="ch">
+        <div class="ch-year"><span class="yr">2020</span><span class="era">令和2</span></div>
+        <div class="ch-body">
+          <h3>三月の買い増し</h3>
+          <p>感染症の報道とともに相場が崩れた三月、友則は賞与の残りの半分を一度に投じた。近所の後輩に理由を聞かれ、こう答えている。「暴落は、安売りの日です。魚屋と同じでしょう」。</p>
+        </div>
+      </article>
+
+      <article class="ch">
+        <div class="ch-year"><span class="yr">2024</span><span class="era">令和6</span></div>
+        <div class="ch-body">
+          <h3>三十四年ぶりの高値</h3>
+          <p>二月二十二日、日経平均が39,098円をつけ、1989年の高値を超えた。三十四年かかった。友則が四百十万円まで減らされた年から数えても、三十二年である。</p>
+          <p>「相場は、待ってくれます。待てない人がいるだけで」。</p>
+          <p class="ch-fig">資産 <b>9,600万円</b> ／ 日経平均 39,098円</p>
+        </div>
+      </article>
+
+      <article class="ch pivot">
+        <div class="ch-year"><span class="yr">2026</span><span class="era">令和8</span></div>
+        <div class="ch-body">
+          <h3>廃校の教室</h3>
+          <p>六十八歳。村に戻り、閉校になった小学校の一室を借りて、月に二度、子どもたちに算盤と複利を教えている。畑は買い戻した。資産のことを聞かれると、彼はいつも金額ではなく年数で答える。</p>
+          <p class="ch-fig">資産 <b>1億1,200万円</b> ／ 元本 3,020万円</p>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <p class="eyebrow">記 録 — 元本と評価額</p>
+      <h2>増えたのは、彼の腕ではなく年数のほうだった</h2>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><span class="k">積み立てた期間</span><span class="v">52年</span></div>
+      <div class="stat"><span class="k">投じた元本</span><span class="v">3,020万円</span></div>
+      <div class="stat accent"><span class="k">2026年の評価額</span><span class="v">1億1,200万円</span></div>
+      <div class="stat"><span class="k">年平均利回り（配当込み）</span><span class="v">7.1%</span></div>
+    </div>
+
+    <div class="legend">
+      <span><i class="swatch sw-gold"></i>評価額</span>
+      <span><i class="swatch sw-indigo"></i>投じた元本（累計）</span>
+      <span><i class="sw-fill"></i>時間が生んだ差</span>
+    </div>
+
+    <div class="chart-scroll">
+      <svg class="chart" viewBox="0 0 880 420" role="img" aria-label="1976年から2026年までの、友則の投じた元本と評価額の推移。元本3,020万円に対し、2026年の評価額は1億1,200万円。">
+        <!-- crash bands -->
+        <rect class="band" x="294" y="24" width="31" height="336"></rect>
+        <rect class="band" x="572" y="24" width="16" height="336"></rect>
+        <rect class="band" x="757" y="24" width="16" height="336"></rect>
+        <text class="band-label" x="309" y="18" text-anchor="middle">バブル崩壊</text>
+        <text class="band-label" x="580" y="18" text-anchor="middle">リーマン</text>
+        <text class="band-label" x="765" y="18" text-anchor="middle">コロナ</text>
+
+        <!-- gridlines + y labels -->
+        <line class="grid" x1="78" y1="24" x2="850" y2="24"></line>
+        <line class="grid" x1="78" y1="108" x2="850" y2="108"></line>
+        <line class="grid" x1="78" y1="192" x2="850" y2="192"></line>
+        <line class="grid" x1="78" y1="276" x2="850" y2="276"></line>
+        <line class="axis-line" x1="78" y1="360" x2="850" y2="360"></line>
+        <text x="66" y="28" text-anchor="end">12,000</text>
+        <text x="66" y="112" text-anchor="end">9,000</text>
+        <text x="66" y="196" text-anchor="end">6,000</text>
+        <text x="66" y="280" text-anchor="end">3,000</text>
+        <text x="66" y="364" text-anchor="end">0</text>
+        <text x="78" y="12" text-anchor="start">万円</text>
+
+        <!-- gap fill between principal and value -->
+        <path class="gap" d="M78,360 L139.8,359.1 L216.9,355.0 L278.7,342.6 L325.0,348.5 L371.3,344.3 L448.4,326.9 L494.8,333.7 L571.9,314.6 L587.3,326.9 L649.1,291.4 L726.2,239.6 L757.1,220.6 L818.9,91.2 L849.8,46.4 L849.8,275.4 L818.9,280.5 L757.1,290.6 L726.2,295.6 L649.1,307.9 L587.3,318.0 L571.9,319.9 L494.8,330.0 L448.4,335.9 L371.3,344.3 L325.0,347.4 L278.7,350.8 L216.9,355.8 L139.8,359.2 Z"></path>
+
+        <polyline class="line-principal" points="78,360 139.8,359.2 216.9,355.8 278.7,350.8 325.0,347.4 371.3,344.3 448.4,335.9 494.8,330.0 571.9,319.9 587.3,318.0 649.1,307.9 726.2,295.6 757.1,290.6 818.9,280.5 849.8,275.4"></polyline>
+        <polyline class="line-asset" points="78,360 139.8,359.1 216.9,355.0 278.7,342.6 325.0,348.5 371.3,344.3 448.4,326.9 494.8,333.7 571.9,314.6 587.3,326.9 649.1,291.4 726.2,239.6 757.1,220.6 818.9,91.2 849.8,46.4"></polyline>
+
+        <circle class="dot-asset" cx="278.7" cy="342.6" r="3"></circle>
+        <circle class="dot-asset" cx="325.0" cy="348.5" r="3"></circle>
+        <circle class="dot-asset" cx="587.3" cy="326.9" r="3"></circle>
+        <circle class="dot-asset" cx="849.8" cy="46.4" r="4"></circle>
+        <circle class="dot-principal" cx="849.8" cy="275.4" r="3.5"></circle>
+
+        <text class="val" x="840" y="42" text-anchor="end">1億1,200万円</text>
+        <text class="val-muted" x="840" y="270" text-anchor="end">元本 3,020万円</text>
+
+        <!-- x labels -->
+        <text x="78" y="382" text-anchor="start">1976</text>
+        <text x="294" y="382" text-anchor="middle">1990</text>
+        <text x="448" y="382" text-anchor="middle">2000</text>
+        <text x="603" y="382" text-anchor="middle">2010</text>
+        <text x="757" y="382" text-anchor="middle">2020</text>
+        <text x="850" y="382" text-anchor="end">2026</text>
+
+        <text class="band-label" x="360" y="402" text-anchor="start">※ 1989年から1995年まで、評価額は元本とほぼ重なっている。六年間、増えた分はすべて失われていた。</text>
+      </svg>
+    </div>
+
+    <p class="chart-note">五十二年で投じた元本は三千二十万円。月あたりにならせば四万八千円ほどで、特別な額ではない。差額の八千百八十万円は、彼が上手に売り買いした結果ではなく、売らずに置いた年数の結果である。線が跳ね上がるのは最後の十年だけで、それまでの四十年は、ほとんど平らに見える。複利とは、そういう形をしている。</p>
+  </section>
+
+  <section class="sec">
+    <div class="sec-head">
+      <p class="eyebrow">原 則 — 手帳の裏表紙に書かれた五行</p>
+      <h2>友則の五つ</h2>
+    </div>
+    <dl class="rules">
+      <div class="rule-row">
+        <dt>予測しない。続ける。</dt>
+        <dd>五十二年のうち、相場の先行きを当てられた年は一度もなかった。当てずに済む方法を選んだから、当てる必要がなかった。</dd>
+      </div>
+      <div class="rule-row">
+        <dt>手数料は確実な損、<br>利回りは不確実な得。</dt>
+        <dd>年2.1%の信託報酬は、相場が上がっても下がっても必ず引かれる。十三年で失ったものを、彼は一度だけ正確に計算し、それきり二度と計算しなかった。</dd>
+      </div>
+      <div class="rule-row">
+        <dt>暴落は、安売りの日である。</dt>
+        <dd>積み立てる者にとって、値下がりは損ではなく仕入れ値の低下である。魚屋の前を通るときと同じ顔で、彼は三月に買い増した。</dd>
+      </div>
+      <div class="rule-row">
+        <dt>増えた額より、<br>減らさなかった年を数える。</dt>
+        <dd>元本を割った年は五十二年のうち十一回あった。その十一回をどう過ごしたかで、残りの四十一年の意味が決まる。</dd>
+      </div>
+      <div class="rule-row">
+        <dt>金は時間に働かせ、<br>自分は畑を耕す。</dt>
+        <dd>日中に値段を見ない、という一行でもある。見ないために、彼は毎月十日の自動引き落としを選んだ。</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section class="closing">
+    <div class="prose">
+      <p class="eyebrow">終 — 黒板</p>
+      <p style="margin-top:14px">廃校の教室で、友則が最初に書く式はいつも同じである。子どもたちは、答えが「九」だと知ると、たいてい黙る。</p>
+    </div>
+    <div class="blackboard">
+      <span class="eq">72 ÷ 8 = 9</span>
+      <span class="cap">年八分で回れば、九年で倍になる。<br>七十二を利率で割る、ただそれだけの目安。<br>十六の友則が、通帳の残高欄で覚えたこと。</span>
+    </div>
+    <div class="prose">
+      <p>「難しいことは、何もしていません」と彼は言う。「ただ、五十二年ぶん、待ちました。待つあいだに、旋盤を回して、簿記を覚えて、子どもを二人育てました。金のほうは、そのあいだ勝手に働いてくれていた」。</p>
+      <p>谷あいの村に、いまは電気も光回線も通っている。証券口座は、その回線の上で、毎月十日に五万五千円を引き落とす。六十八歳の彼は、まだ止めていない。</p>
+    </div>
+    <p class="sign">友 則 の 複 利</p>
+  </section>
+
+  <footer>
+    ※ 本サイトは物語です。友則は架空の人物であり、資産の推移、金額、利回りはいずれも創作された仮想の記録です。日経平均株価の数値（1989年12月29日 38,915円、2003年4月28日 7,607円、2024年2月22日 39,098円）および制度（郵便貯金の定額貯金、株式累積投資、NISA・つみたてNISA）は実在のものを参照していますが、将来の投資成果を示唆・保証するものではありません。投資の判断はご自身の責任において行ってください。
+  </footer>
+
+</div>
+
+<script>
+  try { document.documentElement.lang = "ja"; } catch (e) {}
+</script>
